@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion'
-import { isLowPerfDevice, prefersReducedMotion } from '../utils/perf'
+import { shouldReduce } from '../utils/perf'
 
 export default function Projects() {
-  const reduce = prefersReducedMotion() || isLowPerfDevice()
+  const reduce = shouldReduce()
 
   const items = [
     {
@@ -38,13 +38,12 @@ export default function Projects() {
               initial={reduce ? false : { opacity: 0, y: 20 }}
               whileInView={reduce ? undefined : { opacity: 1, y: 0 }}
               viewport={reduce ? undefined : { once: true, amount: 0.2 }}
-              transition={{ duration: 0.45, delay: reduce ? 0 : idx * 0.05, ease: [0.22, 1, 0.36, 1] }}
-              whileHover={reduce ? undefined : { y: -6 }}
+              transition={{ duration: 0.4, delay: reduce ? 0 : idx * 0.04, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={reduce ? undefined : { y: -4 }}
             >
               <motion.div
                 className="aspect-video rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 mb-4"
-                layoutId={reduce ? undefined : `thumb-${idx}`}
-                whileHover={reduce ? undefined : { scale: 1.015 }}
+                whileHover={reduce ? undefined : { scale: 1.01 }}
                 transition={{ type: 'spring', stiffness: 220, damping: 22 }}
               />
               <h3 className="text-white font-semibold text-lg">{p.title}</h3>

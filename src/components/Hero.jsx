@@ -1,15 +1,35 @@
-import Spline from '@splinetool/react-spline'
+import { useEffect, useState, Suspense } from 'react'
 import { motion } from 'framer-motion'
-import { isLowPerfDevice, prefersReducedMotion } from '../utils/perf'
+import { shouldReduce } from '../utils/perf'
 
 export default function Hero() {
-  const reduce = prefersReducedMotion() || isLowPerfDevice()
+  const reduce = shouldReduce()
+  const [SplineComp, setSplineComp] = useState(null)
+
+  useEffect(() => {
+    let mounted = true
+    if (!reduce) {
+      import('@splinetool/react-spline')
+        .then((m) => {
+          if (mounted) setSplineComp(() => m.default)
+        })
+        .catch(() => {
+          if (mounted) setSplineComp(null)
+        })
+    }
+    return () => {
+      mounted = false
+    }
+  }, [reduce])
 
   return (
     <section id="home" className="relative h-[70vh] min-h-[520px] w-full overflow-hidden">
       <div className="absolute inset-0">
-        {!reduce ? (
-          <Spline scene="https://prod.spline.design/xzUirwcZB9SOxUWt/scene.splinecode" style={{ width: '100%', height: '100%' }} />
+        {!reduce && SplineComp ? (
+          <Suspense fallback={<div className="w-full h-full bg-gradient-to-b from-slate-900 to-slate-950" />}
+          >
+            <SplineComp scene="https://prod.spline.design/xzUirwcZB9SOxUWt/scene.splinecode" style={{ width: '100%', height: '100%' }} />
+          </Suspense>
         ) : (
           <div className="w-full h-full bg-gradient-to-b from-slate-900 to-slate-950" />
         )}

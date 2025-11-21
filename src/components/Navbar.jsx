@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Menu, X, Linkedin } from 'lucide-react'
+import { Menu, X, Linkedin, Gauge } from 'lucide-react'
+import { getLiteFlag, setLiteFlag, shouldReduce } from '../utils/perf'
 
 function NavLink({ href, children, onClick }) {
   return (
@@ -16,12 +17,25 @@ function NavLink({ href, children, onClick }) {
 export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [lite, setLite] = useState(false)
+
+  useEffect(() => {
+    setLite(getLiteFlag() || shouldReduce())
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
     window.addEventListener('scroll', onScroll)
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
+
+  const toggleLite = () => {
+    const next = !getLiteFlag()
+    setLiteFlag(next)
+    setLite(next)
+    // Immediate feedback: soft reload components relying on flag
+    window.location.reload()
+  }
 
   return (
     <header className={`fixed top-0 left-0 right-0 z-50 transition-all ${scrolled ? 'backdrop-blur bg-slate-900/70 border-b border-white/10' : 'bg-transparent'}`}>
@@ -30,10 +44,17 @@ export default function Navbar() {
           Your Name
         </a>
 
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-6">
           <NavLink href="#about">About</NavLink>
           <NavLink href="#projects">Work</NavLink>
           <NavLink href="#contact">Contact</NavLink>
+          <button
+            onClick={toggleLite}
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${lite ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-800/60 text-slate-200 border-white/10 hover:bg-slate-700/60'}`}
+            title="Toggle performance mode"
+          >
+            <Gauge size={14} /> {lite ? 'Performance On' : 'Performance Off'}
+          </button>
           <a
             href="https://www.linkedin.com/in/your-profile"
             target="_blank"
@@ -45,9 +66,18 @@ export default function Navbar() {
           </a>
         </nav>
 
-        <button onClick={() => setOpen(!open)} className="md:hidden text-white">
-          {open ? <X /> : <Menu />}
-        </button>
+        <div className="md:hidden flex items-center gap-3">
+          <button
+            onClick={toggleLite}
+            className={`inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-[11px] font-medium ${lite ? 'bg-emerald-600 text-white border-emerald-500' : 'bg-slate-800/60 text-slate-200 border-white/10'}`}
+            title="Toggle performance mode"
+          >
+            <Gauge size={12} /> {lite ? 'Perf' : 'Perf'}
+          </button>
+          <button onClick={() => setOpen(!open)} className="text-white">
+            {open ? <X /> : <Menu />}
+          </button>
+        </div>
       </div>
 
       {open && (
